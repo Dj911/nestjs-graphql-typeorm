@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserInput } from './dto/create-user.input';
@@ -11,24 +15,55 @@ export class UserService {
 
   async create(createUserInput: CreateUserInput) {
     const { email, password } = createUserInput;
+    const check = await this.repo.findOne({
+      where: {
+        email,
+      },
+    });
+    if (check) throw new BadRequestException('Email Taken!');
     const user = this.repo.create({ email, password });
 
     return await this.repo.save(user);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll() {
+    return await this.repo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    const user = await this.repo.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!user) throw new NotFoundException('User Not Found!');
+
+    return user;
   }
 
-  update(id: number, updateUserInput: UpdateUserInput) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserInput: UpdateUserInput) {
+    const { email, password } = updateUserInput;
+    const payload = {
+      email,
+      password,
+    };
+    const check = await this.repo.findOne({
+      where: {
+        email,
+      },
+    });
+
+    await this.repo.update(id, payload);
+    return 'User Profile Updated';
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    const user = await this.repo.findOne({
+      where: { id },
+    });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return this.repo.remove(user);
   }
 }
