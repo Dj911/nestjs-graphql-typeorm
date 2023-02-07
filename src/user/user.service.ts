@@ -64,6 +64,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    return this.repo.remove(user);
+    await this.repo.remove(user);
+    return 'User Profile Deleted';
   }
 }
