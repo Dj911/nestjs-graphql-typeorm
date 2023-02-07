@@ -35,6 +35,8 @@ export class UserResolver {
 
   @Query((returns) => String)
   helloWorld() {
+    console.log('HERE!');
+
     return 'Hello World';
   }
 }
